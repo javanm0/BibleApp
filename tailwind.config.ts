@@ -11,6 +11,8 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        dropdownBg: "#2d3748", // Custom background color for dropdown
+        dropdownText: "#ffffff", // Custom text color for dropdown
       },
     },
   },

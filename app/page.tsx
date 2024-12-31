@@ -145,6 +145,11 @@ export default function Home() {
           </div>
         )}
       </main>
+      <footer className="text-left  absolute bottom-0 w-full p-4">
+        <p className="text-black dark:text-white">
+          © 2025 <a href="https://www.javanmiller.com">Javan Miller</a>
+        </p>
+      </footer>
     </div>
   );
 }

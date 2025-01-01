@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 
@@ -64,21 +63,33 @@ interface Verses {
 export default function Home() {
   const [book, setBook] = useState<string>("");
   const [chapter, setChapter] = useState<string>("");
+  const [selectedBook, setSelectedBook] = useState<string>("");
+  const [selectedChapter, setSelectedChapter] = useState<string>("");
   const [summary, setSummary] = useState<string>("");
   const [verses, setVerses] = useState<string>("");
 
-  const fetchVersesAndSummary = async () => {
-    const response = await fetch(
-      `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${book}%20${chapter}`
-    );
-    const data = await response.json();
-    const versesData: Verses = data.results[0].verses.kjv[chapter];
-    let versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
-    versesText = versesText.replaceAll("¶", "\n\n");
-    setVerses(versesText);
+  const fetchVersesAndSummary = async (book: string, chapter: string) => {
+    try {
+      const response = await fetch(
+        `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${book}%20${chapter}`
+      );
+      const data = await response.json();
+      if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
+        const versesData: Verses = data.results[0].verses.kjv[chapter];
+        let versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
+        versesText = versesText.replaceAll("¶", "\n\n");
+        setVerses(versesText);
 
-    const summary = await getGroqSummary(versesText);
-    setSummary(summary);
+        const summary = await getGroqSummary(versesText);
+        setSummary(summary);
+      } else {
+        throw new Error("Invalid data structure received from the API");
+      }
+    } catch (error) {
+      console.error("Error fetching verses and summary:", error);
+      setVerses("Error fetching verses. Please try again.");
+      setSummary("");
+    }
   };
 
   const getGroqSummary = async (text: string) => {
@@ -96,6 +107,12 @@ export default function Home() {
       model: model,
     });
     return response.choices[0]?.message?.content || "";
+  };
+
+  const handleFetchClick = () => {
+    setSelectedBook(book);
+    setSelectedChapter(chapter);
+    fetchVersesAndSummary(book, chapter);
   };
 
   return (
@@ -128,13 +145,13 @@ export default function Home() {
               </option>
             ))}
           </select>
-          <button onClick={fetchVersesAndSummary} className="bg-blue-500 text-white p-2">
+          <button onClick={handleFetchClick} className="bg-blue-500 text-white p-2">
             Fetch
           </button>
         </div>
         {verses && (
         <div>
-          <h2 className="text-xl font-semibold">{book} {chapter}</h2>
+          <h2 className="text-xl font-semibold">{selectedBook} {selectedChapter}</h2>
           <div className="mt-2">
             {verses.split("\n\n").map((paragraph, index) => (
               <p key={index} className="mb-4">{paragraph}</p>

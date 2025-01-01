@@ -24,18 +24,13 @@ const chaptersPerBook: { [key: string]: number } = {
   "1 Peter": 5, "2 Peter": 3, "1 John": 5, "2 John": 1, "3 John": 1, "Jude": 1, "Revelation": 22
 };
 
-interface HomeProps {
-  initialVerses: string;
-  initialSummary: string;
-}
-
-export default function Home({ initialVerses = "", initialSummary = "" }: HomeProps) {
+export default function Home() {
   const [book, setBook] = useState<string>("");
   const [chapter, setChapter] = useState<string>("");
   const [selectedBook, setSelectedBook] = useState<string>("");
   const [selectedChapter, setSelectedChapter] = useState<string>("");
-  const [summary, setSummary] = useState<string>(initialSummary);
-  const [verses, setVerses] = useState<string>(initialVerses);
+  const [summary, setSummary] = useState<string>("");
+  const [verses, setVerses] = useState<string>("");
   const [showIntro, setShowIntro] = useState<boolean>(true);
 
   const fetchVersesAndSummary = async (book: string, chapter: string) => {

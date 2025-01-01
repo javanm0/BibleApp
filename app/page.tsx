@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 
@@ -98,9 +99,9 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 items-center">
-        <h1 className="text-2xl font-bold">Scripture Scope</h1>
+    <div className="flex flex-col min-h-screen">
+      <main className="flex flex-col gap-8 items-center flex-grow p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+        <h1 className="text-3xl font-bold">Scripture Scope</h1>
         <div className="flex flex-col gap-4">
           <select
             value={book}
@@ -132,20 +133,25 @@ export default function Home() {
           </button>
         </div>
         {verses && (
-          <div>
+        <div>
+          <h2 className="text-xl font-semibold">{book} {chapter}</h2>
+          <div className="mt-2">
             {verses.split("\n\n").map((paragraph, index) => (
               <p key={index} className="mb-4">{paragraph}</p>
             ))}
           </div>
+        </div>
         )}
         {summary && (
           <div>
             <h2 className="text-xl font-semibold">Summary</h2>
-            <p>{summary}</p>
+            <div className="mt-4">
+              <p>{summary}</p>
+            </div>
           </div>
         )}
       </main>
-      <footer className="text-left  absolute bottom-0 w-full p-4">
+      <footer className="text-left pl-4 pb-4 w-full">
         <p className="text-black dark:text-white">
           © 2025 <a href="https://www.javanmiller.com">Javan Miller</a>
         </p>

@@ -22,6 +22,20 @@ if (!bibleType) {
 
 const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
 
+interface Verse {
+  id: number;
+  book: number;
+  chapter: number;
+  verse: number;
+  text: string;
+  italics: string;
+  claimed: boolean;
+}
+
+interface Verses {
+  [key: string]: Verse;
+}
+
 const fetchInitialData = async (book: string, chapter: string) => {
   const response = await fetch(
     `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${book}%20${chapter}`
@@ -32,8 +46,8 @@ const fetchInitialData = async (book: string, chapter: string) => {
   let initialSummary = "";
 
   if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
-    const versesData = data.results[0].verses.kjv[chapter];
-    initialVerses = Object.values(versesData).map((verse: any) => verse.text).join(" ");
+    const versesData: Verses = data.results[0].verses.kjv[chapter];
+    initialVerses = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
     initialVerses = initialVerses.replaceAll("¶", "\n\n");
 
     const response = await groq.chat.completions.create({

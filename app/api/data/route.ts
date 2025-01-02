@@ -90,12 +90,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { text } = await request.json();
+    const { text, expertLevel } = await request.json();
     const response = await groq.chat.completions.create({
       messages: [
         {
           role: "user",
-          content: `Do not use markdown syntax. Summarize the following text: ${text}`,
+          content: `Do not use markdown syntax. Summarize the following text for an individual with a ${expertLevel} spiritual knowledge level: ${text}`,
         },
       ],
       model: model as string,

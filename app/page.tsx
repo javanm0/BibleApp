@@ -93,7 +93,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex flex-col gap-8 items-center flex-grow p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-        <h1 className="text-3xl font-bold">Scripture Scope</h1>
+        <h1 className="text-4xl font-bold">Scripture Scope</h1>
         <div className="flex flex-col gap-4">
           <select
             value={book}

@@ -37,8 +37,10 @@ interface Verses {
 }
 
 const fetchInitialData = async (book: string, chapter: string) => {
+  const encodedBook = encodeURIComponent(book);
+  const encodedChapter = encodeURIComponent(chapter);
   const response = await fetch(
-    `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${book}%20${chapter}`
+    `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${encodedBook}%20${encodedChapter}`
   );
   const data = await response.json();
 
@@ -57,7 +59,7 @@ const fetchInitialData = async (book: string, chapter: string) => {
           content: `Do not use markdown syntax. Summarize the following text: ${initialVerses}`,
         },
       ],
-      model: model,
+      model: model as string, // Ensure model is defined and cast to string
     });
     initialSummary = response.choices[0]?.message?.content || "";
   }
@@ -77,6 +79,29 @@ export async function GET(request: Request) {
   try {
     const data = await fetchInitialData(book, chapter);
     return NextResponse.json(data);
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    } else {
+      return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
+    }
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const { text } = await request.json();
+    const response = await groq.chat.completions.create({
+      messages: [
+        {
+          role: "user",
+          content: `Do not use markdown syntax. Summarize the following text: ${text}`,
+        },
+      ],
+      model: model as string,
+    });
+    const summary = response.choices[0]?.message?.content || "";
+    return NextResponse.json({ summary });
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

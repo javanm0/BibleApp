@@ -35,10 +35,30 @@ export default function Home() {
 
   const fetchVersesAndSummary = async (book: string, chapter: string) => {
     try {
-      const response = await fetch(`/api/data?book=${book}&chapter=${chapter}`);
+      const encodedBook = encodeURIComponent(book);
+      const encodedChapter = encodeURIComponent(chapter);
+      const response = await fetch(
+        `https://api.biblesupersearch.com/api?bible=${process.env.NEXT_PUBLIC_BIBLE_TYPE}&reference=${encodedBook}%20${encodedChapter}`
+      );
       const data = await response.json();
-      setVerses(data.initialVerses);
-      setSummary(data.initialSummary);
+
+      if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
+        const versesData = data.results[0].verses.kjv[chapter];
+        const versesText = Object.values(versesData).map((verse: any) => verse.text).join(" ");
+        setVerses(versesText.replaceAll("¶", "\n\n"));
+
+        const summaryResponse = await fetch('/api/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: versesText }),
+        });
+        const summaryData = await summaryResponse.json();
+        setSummary(summaryData.summary);
+      } else {
+        throw new Error("Invalid data structure received from the API");
+      }
     } catch (error) {
       console.error("Error fetching verses and summary:", error);
       setVerses("Error fetching verses. Please try again.");

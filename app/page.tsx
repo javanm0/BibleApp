@@ -24,6 +24,20 @@ const chaptersPerBook: { [key: string]: number } = {
   "1 Peter": 5, "2 Peter": 3, "1 John": 5, "2 John": 1, "3 John": 1, "Jude": 1, "Revelation": 22
 };
 
+interface Verse {
+  id: number;
+  book: number;
+  chapter: number;
+  verse: number;
+  text: string;
+  italics: string;
+  claimed: boolean;
+}
+
+interface Verses {
+  [key: string]: Verse;
+}
+
 export default function Home() {
   const [book, setBook] = useState<string>("");
   const [chapter, setChapter] = useState<string>("");
@@ -43,8 +57,8 @@ export default function Home() {
       const data = await response.json();
 
       if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
-        const versesData = data.results[0].verses.kjv[chapter];
-        const versesText = Object.values(versesData).map((verse: any) => verse.text).join(" ");
+        const versesData: Verses = data.results[0].verses.kjv[chapter];
+        const versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
         setVerses(versesText.replaceAll("¶", "\n\n"));
 
         const summaryResponse = await fetch('/api/data', {

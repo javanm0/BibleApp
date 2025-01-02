@@ -1,28 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Groq from "groq-sdk";
-import dotenv from "dotenv";
-
-dotenv.config();
-
-const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
-const model = process.env.NEXT_PUBLIC_GROQ_MODEL;
-const bibleType = process.env.NEXT_PUBLIC_BIBLE_TYPE;
-
-if (!apiKey) {
-  throw new Error("The GROQ_API_KEY environment variable is missing or empty; either provide it, or instantiate the Groq client with an apiKey option, like new Groq({ apiKey: 'My API Key' }).");
-}
-
-if (!model) {
-  throw new Error("The NEXT_PUBLIC_GROQ_MODEL environment variable is missing or empty; please provide a valid model.");
-}
-
-if (!bibleType) {
-  throw new Error("The NEXT_PUBLIC_BIBLE_TYPE environment variable is missing or empty; please provide a valid Bible type.");
-}
-
-const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
 
 const booksOfTheBible = [
   "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
@@ -71,18 +49,27 @@ export default function Home() {
 
   const fetchVersesAndSummary = async (book: string, chapter: string) => {
     try {
+      const encodedBook = encodeURIComponent(book);
+      const encodedChapter = encodeURIComponent(chapter);
       const response = await fetch(
-        `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${book}%20${chapter}`
+        `https://api.biblesupersearch.com/api?bible=${process.env.NEXT_PUBLIC_BIBLE_TYPE}&reference=${encodedBook}%20${encodedChapter}`
       );
       const data = await response.json();
+
       if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
         const versesData: Verses = data.results[0].verses.kjv[chapter];
-        let versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
-        versesText = versesText.replaceAll("¶", "\n\n");
-        setVerses(versesText);
+        const versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
+        setVerses(versesText.replaceAll("¶", "\n\n"));
 
-        const summary = await getGroqSummary(versesText);
-        setSummary(summary);
+        const summaryResponse = await fetch('/api/data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: versesText }),
+        });
+        const summaryData = await summaryResponse.json();
+        setSummary(summaryData.summary);
       } else {
         throw new Error("Invalid data structure received from the API");
       }
@@ -91,23 +78,6 @@ export default function Home() {
       setVerses("Error fetching verses. Please try again.");
       setSummary("");
     }
-  };
-
-  const getGroqSummary = async (text: string) => {
-    if (!model) {
-      throw new Error("The NEXT_PUBLIC_GROQ_MODEL environment variable is missing or empty; please provide a valid model.");
-    }
-
-    const response = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "user",
-          content: `Do not use markdown syntax. Summarize the following text: ${text}`,
-        },
-      ],
-      model: model,
-    });
-    return response.choices[0]?.message?.content || "";
   };
 
   const handleFetchClick = () => {

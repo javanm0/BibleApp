@@ -49,8 +49,12 @@ export default function Home() {
   const [verses, setVerses] = useState<string>("");
   const [showIntro, setShowIntro] = useState<boolean>(true);
   const [expertLevel, setExpertLevel] = useState<string>("Standard");
+  const [loadingVerses, setLoadingVerses] = useState<boolean>(false);
+  const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
 
   const fetchVersesAndSummary = async (book: string, chapter: string, expertLevel: string) => {
+    setLoadingVerses(true);
+    setLoadingSummary(false);
     try {
       const encodedBook = encodeURIComponent(book);
       const encodedChapter = encodeURIComponent(chapter);
@@ -63,6 +67,8 @@ export default function Home() {
         const versesData: Verses = data.results[0].verses.kjv[chapter];
         const versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
         setVerses(versesText.replaceAll("¶", "\n\n"));
+        setLoadingVerses(false);
+        setLoadingSummary(true);
 
         const summaryResponse = await fetch('/api/data', {
           method: 'POST',
@@ -73,6 +79,7 @@ export default function Home() {
         });
         const summaryData = await summaryResponse.json();
         setSummary(summaryData.summary);
+        setLoadingSummary(false);
       } else {
         throw new Error("Invalid data structure received from the API");
       }
@@ -80,6 +87,8 @@ export default function Home() {
       console.error("Error fetching verses and summary:", error);
       setVerses("Error fetching verses. Please try again.");
       setSummary("");
+      setLoadingVerses(false);
+      setLoadingSummary(false);
     }
   };
 
@@ -135,6 +144,34 @@ export default function Home() {
             Fetch
           </button>
         </div>
+        {loadingVerses && (
+          <div className="mt-4 text-center">
+            <p className="text-lg">Loading verses...</p>
+          </div>
+        )}
+        {!loadingVerses && verses && (
+          <div>
+            <h2 className="text-xl font-semibold">{selectedBook} {selectedChapter}</h2>
+            <div className="mt-2">
+              {verses.split("\n\n").map((paragraph, index) => (
+                <p key={index} className="mb-4">{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        )}
+        {!loadingVerses && loadingSummary && (
+          <div className="mt-4 text-center">
+            <p className="text-lg">Loading summary...</p>
+          </div>
+        )}
+        {!loadingVerses && !loadingSummary && summary && (
+          <div>
+            <h2 className="text-xl font-semibold">Summary</h2>
+            <div className="mt-4">
+              <p>{summary}</p>
+            </div>
+          </div>
+        )}
         {showIntro && (
           <div className="mt-4 text-center">
             <p className="text-lg">
@@ -146,25 +183,7 @@ export default function Home() {
             </p>
           </div>
         )}
-        {!showIntro && verses && (
-          <div>
-            <h2 className="text-xl font-semibold">{selectedBook} {selectedChapter}</h2>
-            <div className="mt-2">
-              {verses.split("\n\n").map((paragraph, index) => (
-                <p key={index} className="mb-4">{paragraph}</p>
-              ))}
-            </div>
-          </div>
-        )}
-        {!showIntro && summary && (
-          <div>
-            <h2 className="text-xl font-semibold">Summary</h2>
-            <div className="mt-4">
-              <p>{summary}</p>
-            </div>
-          </div>
-        )}
-
+      </main>
       <footer className="pb-4 w-full mt-12">
         <div className="w-full px-4 flex justify-between items-center">
           <p className="text-black dark:text-white">
@@ -175,7 +194,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-      </main>
     </div>
   );
 }

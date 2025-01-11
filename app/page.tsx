@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 const booksOfTheBible = [
   "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel",
@@ -39,6 +40,32 @@ export default function Home() {
   const [version, setVersion] = useState<string>("KJV");
   const [loadingVerses, setLoadingVerses] = useState<boolean>(false);
   const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+  const [shouldPromptSave, setShouldPromptSave] = useState<boolean>(false);
+
+  useEffect(() => {
+    const savedExpertLevel = Cookies.get("expertLevel");
+    const savedVersion = Cookies.get("version");
+
+    if (savedExpertLevel) {
+      setExpertLevel(savedExpertLevel);
+    }
+
+    if (savedVersion) {
+      setVersion(savedVersion);
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedExpertLevel = Cookies.get("expertLevel");
+    const savedVersion = Cookies.get("version");
+
+    if ((savedExpertLevel && savedExpertLevel !== expertLevel) || (savedVersion && savedVersion !== version)) {
+      setShouldPromptSave(true);
+    } else {
+      setShouldPromptSave(false);
+    }
+  }, [expertLevel, version]);
 
   const fetchVersesAndSummary = async (book: string, chapter: string, expertLevel: string, version: string) => {
     setLoadingVerses(true);
@@ -81,6 +108,24 @@ export default function Home() {
     setSelectedChapter(chapter);
     fetchVersesAndSummary(book, chapter, expertLevel, version);
     setShowIntro(false);
+    if (shouldPromptSave) {
+      setTimeout(() => {
+        setShowPopup(true);
+      }, 2000); // Show popup after 2 seconds
+    }
+  };
+
+  const handleSaveSettings = () => {
+    // Save settings to cookies
+    Cookies.set("expertLevel", expertLevel, { expires: 7 }); // Expires in 7 days
+    Cookies.set("version", version, { expires: 7 }); // Expires in 7 days
+    console.log("Settings saved");
+    setShowPopup(false);
+    setShouldPromptSave(false);
+  };
+
+  const handleCancelSave = () => {
+    setShowPopup(false);
   };
 
   return (
@@ -180,6 +225,18 @@ export default function Home() {
               of the original source or the developer of this application. The content is provided &quot;as is&quot; for informational purposes only, without
               any warranties, express or implied, regarding its accuracy, completeness, or reliability.
             </p>
+          </div>
+        )}
+        {showPopup && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-gray-100 dark:bg-gray-800 p-8 rounded shadow-lg">
+              <h2 className="text-2xl mb-4">Save Settings</h2>
+              <p>Would you like to save your current settings?</p>
+              <div className="mt-4 flex gap-4">
+                <button onClick={handleSaveSettings} className="bg-green-500 text-white p-2">Save</button>
+                <button onClick={handleCancelSave} className="bg-red-500 text-white p-2">Cancel</button>
+              </div>
+            </div>
           </div>
         )}
       </main>

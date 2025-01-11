@@ -24,8 +24,11 @@ export async function GET(request: Request) {
 
   const data = await response.json();
   if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
-    const versesData = data.results[0].verses.kjv[chapter];
-    const versesText = Object.values(versesData).map((verse: any) => verse.text).join(" ").replaceAll("¶", "\n\n");
+    const versesData: { [key: string]: { text: string } } = data.results[0].verses.kjv[chapter];
+    const versesText = Object.values(versesData)
+      .map((verse) => verse.text)
+      .join(" ")
+      .replaceAll("¶", "\n\n");
 
     return NextResponse.json({
       query: query,

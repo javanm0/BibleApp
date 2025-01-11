@@ -24,20 +24,6 @@ const chaptersPerBook: { [key: string]: number } = {
   "1 Peter": 5, "2 Peter": 3, "1 John": 5, "2 John": 1, "3 John": 1, "Jude": 1, "Revelation": 22,
 };
 
-interface Verse {
-  id: number;
-  book: number;
-  chapter: number;
-  verse: number;
-  text: string;
-  italics: string;
-  claimed: boolean;
-}
-
-interface Verses {
-  [key: string]: Verse;
-}
-
 const expertLevels = ["Beginner", "Standard"];
 const versions = ["ESV", "KJV"];
 

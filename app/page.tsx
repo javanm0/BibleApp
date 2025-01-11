@@ -59,7 +59,7 @@ export default function Home() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: versesText, expertLevel }),
+          body: JSON.stringify({ text: versesText, expertLevel, version }),
         });
         const summaryData = await summaryResponse.json();
         setSummary(summaryData.summary);
@@ -75,6 +75,7 @@ export default function Home() {
       setLoadingSummary(false);
     }
   };
+
   const handleFetchClick = () => {
     setSelectedBook(book);
     setSelectedChapter(chapter);
@@ -87,53 +88,59 @@ export default function Home() {
       <main className="flex flex-col gap-8 items-center flex-grow p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <h1 className="text-4xl font-bold">Scripture Scope</h1>
         <div className="flex flex-col gap-4">
-          <select
-            value={book}
-            onChange={(e) => setBook(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-          >
-            <option value="" disabled>Select Book</option>
-            {booksOfTheBible.map((bookName) => (
-              <option key={bookName} value={bookName}>
-                {bookName}
-              </option>
-            ))}
-          </select>
-          <select
-            value={chapter}
-            onChange={(e) => setChapter(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-            disabled={!book}
-          >
-            <option value="" disabled>Select Chapter</option>
-            {book && Array.from({ length: chaptersPerBook[book] }, (_, i) => i + 1).map((chapterNumber) => (
-              <option key={chapterNumber} value={chapterNumber}>
-                {chapterNumber}
-              </option>
-            ))}
-          </select>
-          <select
-            value={expertLevel}
-            onChange={(e) => setExpertLevel(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-          >
-            {expertLevels.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-          <select
-            value={version}
-            onChange={(e) => setVersion(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-          >
-            {versions.map((version) => (
-              <option key={version} value={version}>
-                {version}
-              </option>
-            ))}
-          </select>
+          <div className="flex gap-4">
+            <select
+              value={book}
+              onChange={(e) => setBook(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+            >
+              <option value="" disabled>Select Book</option>
+              {booksOfTheBible.map((bookName) => (
+                <option key={bookName} value={bookName}>
+                  {bookName}
+                </option>
+              ))}
+            </select>
+            <select
+              value={chapter}
+              onChange={(e) => setChapter(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+              disabled={!book}
+            >
+              <option value="" disabled>Select Chapter</option>
+              {book && Array.from({ length: chaptersPerBook[book] }, (_, i) => i + 1).map((chapterNumber) => (
+                <option key={chapterNumber} value={chapterNumber}>
+                  {chapterNumber}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-4 items-center">
+            <select
+              value={expertLevel}
+              onChange={(e) => setExpertLevel(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+            >
+              {expertLevels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-4 items-center">
+            <select
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+            >
+              {versions.map((version) => (
+                <option key={version} value={version}>
+                  {version}
+                </option>
+              ))}
+            </select>
+          </div>
           <button onClick={handleFetchClick} className="bg-blue-500 text-white p-2">
             Fetch
           </button>

@@ -39,20 +39,18 @@ interface Verses {
 const fetchInitialData = async (book: string, chapter: string) => {
   const encodedBook = encodeURIComponent(book);
   const encodedChapter = encodeURIComponent(chapter);
-  const response = await fetch(
-    `https://api.biblesupersearch.com/api?bible=${bibleType}&reference=${encodedBook}%20${encodedChapter}`
-  );
+  const apiUrl = `/api/${bibleType.toLowerCase()}?q=${encodedBook}%20${encodedChapter}`;
+
+  const response = await fetch(apiUrl);
   const data = await response.json();
 
   let initialVerses = "";
   let initialSummary = "";
 
-  if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
-    const versesData: Verses = data.results[0].verses.kjv[chapter];
-    initialVerses = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
-    initialVerses = initialVerses.replaceAll("¶", "\n\n");
+  if (data.passages && data.passages.length > 0) {
+    initialVerses = data.passages.join(" ").replaceAll("¶", "\n\n");
 
-    const response = await groq.chat.completions.create({
+    const summaryResponse = await groq.chat.completions.create({
       messages: [
         {
           role: "user",
@@ -61,7 +59,7 @@ const fetchInitialData = async (book: string, chapter: string) => {
       ],
       model: model as string, // Ensure model is defined and cast to string
     });
-    initialSummary = response.choices[0]?.message?.content || "";
+    initialSummary = summaryResponse.choices[0]?.message?.content || "";
   }
 
   return { initialVerses, initialSummary };

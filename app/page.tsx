@@ -24,21 +24,8 @@ const chaptersPerBook: { [key: string]: number } = {
   "1 Peter": 5, "2 Peter": 3, "1 John": 5, "2 John": 1, "3 John": 1, "Jude": 1, "Revelation": 22,
 };
 
-interface Verse {
-  id: number;
-  book: number;
-  chapter: number;
-  verse: number;
-  text: string;
-  italics: string;
-  claimed: boolean;
-}
-
-interface Verses {
-  [key: string]: Verse;
-}
-
 const expertLevels = ["Beginner", "Standard"];
+const versions = ["ESV", "KJV"];
 
 export default function Home() {
   const [book, setBook] = useState<string>("");
@@ -49,33 +36,30 @@ export default function Home() {
   const [verses, setVerses] = useState<string>("");
   const [showIntro, setShowIntro] = useState<boolean>(true);
   const [expertLevel, setExpertLevel] = useState<string>("Standard");
+  const [version, setVersion] = useState<string>("KJV");
   const [loadingVerses, setLoadingVerses] = useState<boolean>(false);
   const [loadingSummary, setLoadingSummary] = useState<boolean>(false);
 
-  const fetchVersesAndSummary = async (book: string, chapter: string, expertLevel: string) => {
+  const fetchVersesAndSummary = async (book: string, chapter: string, expertLevel: string, version: string) => {
     setLoadingVerses(true);
     setLoadingSummary(false);
     try {
-      const encodedBook = encodeURIComponent(book);
-      const encodedChapter = encodeURIComponent(chapter);
-      const response = await fetch(
-        `https://api.biblesupersearch.com/api?bible=${process.env.NEXT_PUBLIC_BIBLE_TYPE}&reference=${encodedBook}%20${encodedChapter}`
-      );
+      const query = `${book} ${chapter}`;
+      const response = await fetch(`/api/${version.toLowerCase()}?q=${encodeURIComponent(query)}`);
       const data = await response.json();
 
-      if (data.results && data.results[0] && data.results[0].verses && data.results[0].verses.kjv) {
-        const versesData: Verses = data.results[0].verses.kjv[chapter];
-        const versesText = Object.values(versesData).map((verse: Verse) => verse.text).join(" ");
-        setVerses(versesText.replaceAll("¶", "\n\n"));
+      if (data.passages && data.passages.length > 0) {
+        const versesText = data.passages.join(" ");
+        setVerses(versesText);
         setLoadingVerses(false);
         setLoadingSummary(true);
 
-        const summaryResponse = await fetch('/api/data', {
+        const summaryResponse = await fetch('/api/ai', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: versesText, expertLevel }),
+          body: JSON.stringify({ text: versesText, expertLevel, version }),
         });
         const summaryData = await summaryResponse.json();
         setSummary(summaryData.summary);
@@ -95,7 +79,7 @@ export default function Home() {
   const handleFetchClick = () => {
     setSelectedBook(book);
     setSelectedChapter(chapter);
-    fetchVersesAndSummary(book, chapter, expertLevel);
+    fetchVersesAndSummary(book, chapter, expertLevel, version);
     setShowIntro(false);
   };
 
@@ -104,43 +88,58 @@ export default function Home() {
       <main className="flex flex-col gap-8 items-center flex-grow p-8 pb-20 sm:p-20 font-[family-name:var(--font-geist-sans)]">
         <h1 className="text-4xl font-bold">Scripture Scope</h1>
         <div className="flex flex-col gap-4">
-          <select
-            value={book}
-            onChange={(e) => setBook(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-          >
-            <option value="" disabled>Select Book</option>
-            {booksOfTheBible.map((bookName) => (
-              <option key={bookName} value={bookName}>
-                {bookName}
-              </option>
-            ))}
-          </select>
-          <select
-            value={chapter}
-            onChange={(e) => setChapter(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-            disabled={!book}
-          >
-            <option value="" disabled>Select Chapter</option>
-            {book && Array.from({ length: chaptersPerBook[book] }, (_, i) => i + 1).map((chapterNumber) => (
-              <option key={chapterNumber} value={chapterNumber}>
-                {chapterNumber}
-              </option>
-            ))}
-          </select>
-          <select
-            value={expertLevel}
-            onChange={(e) => setExpertLevel(e.target.value)}
-            className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
-          >
-            {expertLevels.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-          <button onClick={handleFetchClick} className="bg-blue-500 text-white p-2">
+          <div className="flex gap-4">
+            <select
+              value={book}
+              onChange={(e) => setBook(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
+            >
+              <option value="" disabled>Select Book</option>
+              {booksOfTheBible.map((bookName) => (
+                <option key={bookName} value={bookName}>
+                  {bookName}
+                </option>
+              ))}
+            </select>
+            <select
+              value={chapter}
+              onChange={(e) => setChapter(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
+              disabled={!book}
+            >
+              <option value="" disabled>Select Chapter</option>
+              {book && Array.from({ length: chaptersPerBook[book] }, (_, i) => i + 1).map((chapterNumber) => (
+                <option key={chapterNumber} value={chapterNumber}>
+                  {chapterNumber}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-4">
+            <select
+              value={expertLevel}
+              onChange={(e) => setExpertLevel(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
+            >
+              {expertLevels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+            <select
+              value={version}
+              onChange={(e) => setVersion(e.target.value)}
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
+            >
+              {versions.map((version) => (
+                <option key={version} value={version}>
+                  {version}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button onClick={handleFetchClick} className="bg-blue-500 text-white p-2 w-full" disabled={!book || !chapter}>
             Fetch
           </button>
         </div>

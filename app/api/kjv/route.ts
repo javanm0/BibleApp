@@ -8,7 +8,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Missing query parameter" }, { status: 400 });
   }
 
-  const [book, chapter] = query.split(' ');
+  const match = query.match(/^(\d?\s?\w+)\s+(\d+)$/);
+  if (!match) {
+    return NextResponse.json({ error: "Invalid query parameter" }, { status: 400 });
+  }
+
+  const [, book, chapter] = match;
 
   if (!book || !chapter) {
     return NextResponse.json({ error: "Invalid query parameter" }, { status: 400 });

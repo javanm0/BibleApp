@@ -92,7 +92,7 @@ export default function Home() {
             <select
               value={book}
               onChange={(e) => setBook(e.target.value)}
-              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
             >
               <option value="" disabled>Select Book</option>
               {booksOfTheBible.map((bookName) => (
@@ -104,7 +104,7 @@ export default function Home() {
             <select
               value={chapter}
               onChange={(e) => setChapter(e.target.value)}
-              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
               disabled={!book}
             >
               <option value="" disabled>Select Chapter</option>
@@ -115,11 +115,11 @@ export default function Home() {
               ))}
             </select>
           </div>
-          <div className="flex gap-4 items-center">
+          <div className="flex gap-4">
             <select
               value={expertLevel}
               onChange={(e) => setExpertLevel(e.target.value)}
-              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
             >
               {expertLevels.map((level) => (
                 <option key={level} value={level}>
@@ -127,12 +127,10 @@ export default function Home() {
                 </option>
               ))}
             </select>
-          </div>
-          <div className="flex gap-4 items-center">
             <select
               value={version}
               onChange={(e) => setVersion(e.target.value)}
-              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white"
+              className="border p-2 bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-1/2"
             >
               {versions.map((version) => (
                 <option key={version} value={version}>
@@ -141,7 +139,7 @@ export default function Home() {
               ))}
             </select>
           </div>
-          <button onClick={handleFetchClick} className="bg-blue-500 text-white p-2">
+          <button onClick={handleFetchClick} className="bg-blue-500 text-white p-2 w-full" disabled={!book || !chapter}>
             Fetch
           </button>
         </div>

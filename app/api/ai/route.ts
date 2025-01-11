@@ -22,20 +22,6 @@ if (!bibleType) {
 
 const groq = new Groq({ apiKey, dangerouslyAllowBrowser: true });
 
-interface Verse {
-  id: number;
-  book: number;
-  chapter: number;
-  verse: number;
-  text: string;
-  italics: string;
-  claimed: boolean;
-}
-
-interface Verses {
-  [key: string]: Verse;
-}
-
 const fetchInitialData = async (book: string, chapter: string) => {
   const encodedBook = encodeURIComponent(book);
   const encodedChapter = encodeURIComponent(chapter);

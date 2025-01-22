@@ -14,7 +14,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(`https://api.esv.org/v3/passage/text/?q=${encodeURIComponent(query)}&include-footnotes=false&include-headings=false`, {
+    const apiUrl = `https://api.esv.org/v3/passage/text/?q=${encodeURIComponent(query)}&include-footnotes=false&include-headings=false`;
+    console.log(`Fetching data from ESV API with URL: ${apiUrl}`);
+
+    const response = await fetch(apiUrl, {
       headers: {
         'Authorization': `Token ${apiKey}`
       }
@@ -29,8 +32,15 @@ export async function GET(request: Request) {
     if (data.passages && data.passages.length > 0) {
       let versesText = data.passages.join(" ").replaceAll("¶", "\n\n");
       versesText = versesText.replace(/\[\d+\]/g, "");
-      versesText = versesText.replace(/^\s*([^\d\n]+)\s*\d+\s*\n\n/gm, "");
       versesText = versesText.replace(/\s*\(ESV\)\s*$/, "");
+
+      const bookChapterRegex = new RegExp(`^${query.replace(/\s+/g, '\\s*')}\\s*`, 'i');
+      versesText = versesText.replace(bookChapterRegex, '');
+
+      const firstLineEndIndex = versesText.indexOf('\n\n');
+      if (firstLineEndIndex !== -1) {
+        versesText = versesText.substring(firstLineEndIndex + 2).trim();
+      }
 
       return NextResponse.json({
         query: query,

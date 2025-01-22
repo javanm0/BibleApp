@@ -42,7 +42,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Invalid data structure received from the API" }, { status: 500 });
     }
   } catch (error) {
-    console.error(`Error fetching data from ESV API: ${error.message}`);
-    return NextResponse.json({ error: "Failed to fetch data from ESV API" }, { status: 500 });
+    if (error instanceof Error) {
+      console.error(`Error fetching data from ESV API: ${error.message}`);
+      return NextResponse.json({ error: "Failed to fetch data from ESV API" }, { status: 500 });
+    } else {
+      console.error("An unknown error occurred");
+      return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
+    }
   }
 }

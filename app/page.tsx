@@ -121,8 +121,8 @@ export default function Home() {
 
         {/* Main Search Card */}
         {showScriptureSelection && (
-          <Card className="max-w-xl mx-auto mb-12 shadow-lg">
-            <CardContent className="p-6">
+          <Card className="max-w-lg mx-auto mb-12 shadow-lg flex flex-col items-center">
+            <CardContent className="p-6 w-full">
               <div className="flex flex-col gap-4">
                 {/* Book and Chapter Selection */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -231,35 +231,37 @@ export default function Home() {
 
               {!loadingVerses && verses && (
                 <Card className="shadow-lg">
-                  <CardHeader className="border-b px-6 py-4">
+                  <CardHeader className="px-6 pt-4">
                     <CardTitle className="text-2xl font-semibold">
                       {selectedBook} {selectedChapter}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6">
-                    {verses.split("\n\n").map((paragraph, index) => (
-                      <p key={index} className="mb-6 leading-relaxed text-lg">{paragraph}</p>
+                  <CardContent className="px-6 pb-6">
+                    {verses.split("\n\n").map((paragraph, index, array) => (
+                      <p 
+                        key={index} 
+                        className={`leading-relaxed text-lg ${
+                          index !== array.length - 1 ? 'mb-4' : ''
+                        }`}
+                      >
+                        {paragraph}
+                      </p>
                     ))}
                   </CardContent>
                 </Card>
               )}
 
-              {loadingSummary && (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-                </div>
-              )}
-
               {!loadingVerses && !loadingSummary && summary && (
                 <Card className="shadow-lg">
-                  <CardHeader className="border-b px-6 py-4">
+                  <CardHeader className="px-6 pt-4 mb-4">
                     <CardTitle className="text-2xl font-semibold">Summary</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6">
+                  <CardContent className="px-6 pb-6">
                     <p className="leading-relaxed text-lg">{summary}</p>
                   </CardContent>
                 </Card>
               )}
+
             </div>
           )}
         </div>
